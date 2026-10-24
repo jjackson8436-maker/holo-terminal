@@ -20,6 +20,7 @@ class MediaListener : NotificationListenerService() {
     private val handler = Handler(Looper.getMainLooper())
     private var last: Map<String, Any>? = null
     private var weather: WeatherFeed? = null
+    private var social: ScreenTimeFeed? = null
 
     private val sessionsChanged = MediaSessionManager.OnActiveSessionsChangedListener { list ->
         track(list ?: emptyList())
@@ -33,12 +34,14 @@ class MediaListener : NotificationListenerService() {
         track(m.getActiveSessions(me))
         connected = true
         weather = WeatherFeed(this).also { it.start() }
+        social = ScreenTimeFeed(this).also { it.start(); ScreenTimeFeed.instance = it }
     }
 
     override fun onListenerDisconnected() {
         msm?.removeOnActiveSessionsChangedListener(sessionsChanged)
         untrack()
         weather?.stop()
+        social?.stop()
         connected = false
     }
 

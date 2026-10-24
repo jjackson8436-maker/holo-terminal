@@ -9,7 +9,8 @@ import Toybox.System;
 //    {"five_hour": 23.5, "seven_day": 41.2, "five_reset": <epoch>, "seven_reset": <epoch>, "updated": <epoch>}
 //    from the URL in the face's settings (Android only allows https here);
 //  - whenever the Holo Link phone app sends a track: {"t": title, "a": artist, "p": playing},
-//    or weather: {"wx": {"c": WMO code, "t": now C, "hi": high C, "lo": low C}}.
+//    weather: {"wx": {"c": WMO code, "t": now C, "hi": high C, "lo": low C}},
+//    or social media time: {"sm": {"m": minutes today, "b": daily budget, "d": yyyymmdd}}.
 (:background)
 class UsageService extends System.ServiceDelegate {
 
@@ -64,6 +65,8 @@ class UsageService extends System.ServiceDelegate {
         var d = msg.data;
         if (d instanceof Dictionary && d.hasKey("wx")) {
             Background.exit({"wx" => d["wx"]});
+        } else if (d instanceof Dictionary && d.hasKey("sm")) {
+            Background.exit({"sm" => d["sm"]});
         } else if (d instanceof Dictionary) {
             Background.exit({"np" => d});
         } else {

@@ -12,7 +12,8 @@ import Toybox.WatchUi;
 
 // Seven themes for the Venu Sq 2's 320x360 AMOLED screen, each a drawing style plus a palette.
 // Claude usage is two rings around the screen edge, filling clockwise from the top:
-// outer = 5-hour session, inner = week. The "labels" setting names them for new users.
+// outer = 5-hour session, middle = week. With the Holo Link phone app, an innermost ring shows
+// today's social media time against a daily budget. The "labels" setting names the rings.
 class HoloView extends WatchUi.WatchFace {
 
     private var _awake as Boolean = true;
@@ -23,6 +24,8 @@ class HoloView extends WatchUi.WatchFace {
     private var _fSmall as Graphics.FontType = Graphics.FONT_XTINY;
     private var _fDate as Graphics.FontType = Graphics.FONT_SMALL;
     private var _fLabel as Graphics.FontType = Graphics.FONT_XTINY;
+    // How far the date moves down to make room for labels inside a third ring.
+    private var _dateDrop as Number = 0;
 
     // Drawing styles.
     private const TERMINAL = 0;   // VT323, scanlines, dashed rings, phosphor glow
@@ -31,17 +34,17 @@ class HoloView extends WatchUi.WatchFace {
     private const RAIN = 3;       // VT323 over falling code
     private const MONO = 4;       // Orbitron, plain
 
-    // Per theme: style, then palette [background, main/outer ring, dim, inner ring, warn, faint track, accent].
+    // Per theme: style, then palette [background, main/outer ring, dim, inner ring, warn, faint track, accent, social ring].
     // Order matches the theme list in settings.xml.
     private const STYLE = [0, 0, 1, 1, 2, 3, 4];
     private const PAL = [
-        [0x000000, 0x1BFF80, 0x0B6B36, 0x0FB85A, 0xFFB000, 0x06301A, 0x9CFFC8],   // Wasteland
-        [0x000000, 0xFFB000, 0x6B4A00, 0xD08A00, 0xFF4A20, 0x2A1C00, 0xFFD27A],   // Amber
-        [0x000000, 0xFCEE0A, 0x4A4600, 0x00F0FF, 0xFF2A6D, 0x14142E, 0xFF2A6D],   // Neon
-        [0x000000, 0x00E5FF, 0x0A4A55, 0xFF8A00, 0xFF3030, 0x0A1A22, 0xFF8A00],   // Grid
-        [0x0A0014, 0xFF6AD5, 0x5A2050, 0x26D7FF, 0xFFE14D, 0x24103A, 0xFFB000],   // Outrun
-        [0x000000, 0x00FF41, 0x005F1A, 0x00B030, 0xE0FFE0, 0x002208, 0x8CFF9E],   // Rain
-        [0x000000, 0xFFFFFF, 0x4A4A4A, 0x9A9A9A, 0xFF5050, 0x1A1A1A, 0xCFCFCF]    // Mono
+        [0x000000, 0x1BFF80, 0x0B6B36, 0x0FB85A, 0xFFB000, 0x06301A, 0x9CFFC8, 0xD8FFE8],   // Wasteland
+        [0x000000, 0xFFB000, 0x6B4A00, 0xD08A00, 0xFF4A20, 0x2A1C00, 0xFFD27A, 0xFFF0C8],   // Amber
+        [0x000000, 0xFCEE0A, 0x4A4600, 0x00F0FF, 0xFF2A6D, 0x14142E, 0xFF2A6D, 0xB86BFF],   // Neon
+        [0x000000, 0x00E5FF, 0x0A4A55, 0xFF8A00, 0xFF3030, 0x0A1A22, 0xFF8A00, 0xFFFFFF],   // Grid
+        [0x0A0014, 0xFF6AD5, 0x5A2050, 0x26D7FF, 0xFFE14D, 0x24103A, 0xFFB000, 0xFFB000],   // Outrun
+        [0x000000, 0x00FF41, 0x005F1A, 0x00B030, 0xE0FFE0, 0x002208, 0x8CFF9E, 0xD0FFD0],   // Rain
+        [0x000000, 0xFFFFFF, 0x4A4A4A, 0x9A9A9A, 0xFF5050, 0x1A1A1A, 0xCFCFCF, 0x6E6E6E]    // Mono
     ];
 
     function initialize() {
@@ -117,6 +120,8 @@ class HoloView extends WatchUi.WatchFace {
         }
 
         var u = usage();
+        var sm = social();
+        _dateDrop = (sm != null && labelsOn()) ? 14 : 0;
         if (style == TERMINAL || style == RAIN) {
             drawTerminal(dc, p, timeStr, u, style == RAIN, clock.hour * 60 + clock.min);
         } else if (style == NEON) {
@@ -126,8 +131,11 @@ class HoloView extends WatchUi.WatchFace {
         } else {
             drawMono(dc, p, timeStr, u);
         }
+        if (sm != null) {
+            socialRing(dc, p, style, sm);
+        }
         if (labelsOn()) {
-            ringLabels(dc, p, u);
+            ringLabels(dc, p, u, sm);
         }
     }
 
@@ -209,7 +217,7 @@ class HoloView extends WatchUi.WatchFace {
 
         var cx = _w / 2;
         dc.setColor(p[6], Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 38, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, 38 + _dateDrop, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
         header(dc, 90, p[1], p[3], p[2], p[2]);
 
         // Time with a soft phosphor glow.
@@ -265,9 +273,9 @@ class HoloView extends WatchUi.WatchFace {
         var cx = _w / 2;
         // Date: big, with a ghost in the accent color.
         dc.setColor(p[6], Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx + 2, 38, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx + 2, 38 + _dateDrop, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
         dc.setColor(p[1], Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 36, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, 36 + _dateDrop, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
         header(dc, 90, p[1], p[3], p[2], p[3]);
 
         // Glitched time: accent and inner-ring-color ghosts behind the main color, plus a cut slice.
@@ -336,9 +344,9 @@ class HoloView extends WatchUi.WatchFace {
         ring(dc, 17, 3, 22, u[1] as Number, u[2] as Boolean, p[3], p[4], p[5], p[2], 0, 0);
 
         dc.setColor(p[1], Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx + 2, 38, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx + 2, 38 + _dateDrop, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
         dc.setColor(p[3], Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 36, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, 36 + _dateDrop, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
         header(dc, 90, p[3], p[1], p[2], p[1]);
 
         // Time in white with a dark outline and a pink drop, so it reads over the sun.
@@ -376,7 +384,7 @@ class HoloView extends WatchUi.WatchFace {
 
         var cx = _w / 2;
         dc.setColor(p[3], Graphics.COLOR_TRANSPARENT);
-        dc.drawText(cx, 36, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(cx, 36 + _dateDrop, _fDate, dateStr(), Graphics.TEXT_JUSTIFY_CENTER);
         header(dc, 90, p[1], p[3], p[2], p[3]);
 
         var ty = _h / 2 - 24;
@@ -389,11 +397,62 @@ class HoloView extends WatchUi.WatchFace {
         stats(dc, _h - 84, p[6], p[4], p[5]);
     }
 
+    // ---------- social media ring ----------
+
+    // [pct of budget (capped at 100), over budget, minutes, budget, stale] from Holo Link, or null
+    // if the phone app has never sent any. A reading from an earlier day counts as 0 minutes.
+    private function social() as Array? {
+        var sm = Application.Storage.getValue("sm");
+        if (!(sm instanceof Dictionary)) { sm = demoSocial(); }
+        if (!(sm instanceof Dictionary)) { return null; }
+        var m = sm["m"];
+        var b = sm["b"];
+        if (!(m instanceof Number) || !(b instanceof Number) || b <= 0) { return null; }
+        var d = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
+        var today = (d.year as Number) * 10000 + (d.month as Number) * 100 + (d.day as Number);
+        if (sm["d"] != today) { m = 0; }
+        var got = sm["got"];
+        var stale = !(got instanceof Number) || Time.now().value() - got > 30 * 60;
+        var pct = m * 100 / b;
+        return [pct > 100 ? 100 : pct, m >= b, m, b, stale];
+    }
+
+    // Sample reading so the ring can be judged in the simulator. Stripped from release builds.
+    (:debug)
+    private function demoSocial() as Dictionary? {
+        var d = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
+        return {"m" => 42, "b" => 60, "d" => (d.year as Number) * 10000 + (d.month as Number) * 100 + (d.day as Number),
+                "got" => Time.now().value()};
+    }
+
+    (:release)
+    private function demoSocial() as Dictionary? {
+        return null;
+    }
+
+    // Innermost ring, in the theme's social color; the warn color once over budget.
+    private function socialRing(dc as Graphics.Dc, p as Array<Number>, style as Number, sm as Array) as Void {
+        var c = (sm[1] as Boolean) ? p[4] : p[7];
+        var stale = sm[4] as Boolean;
+        if (style == TERMINAL || style == RAIN) {
+            ring(dc, 28, 3, 16, sm[0] as Number, stale, c, c, p[5], p[2], 4, 4);
+        } else if (style == MONO) {
+            ring(dc, 23, 2, 16, sm[0] as Number, stale, c, c, p[5], p[2], 0, 0);
+        } else {
+            ring(dc, 26, 3, 16, sm[0] as Number, stale, c, c, p[5], p[2], 0, 0);
+        }
+    }
+
     // ---------- ring labels ----------
 
     // Names the rings for people new to the face: outer = session, inner = week.
-    private function ringLabels(dc as Graphics.Dc, p as Array<Number>, u as Array) as Void {
-        var y = 21;
+    private function ringLabels(dc as Graphics.Dc, p as Array<Number>, u as Array, sm as Array?) as Void {
+        var y = (sm == null) ? 21 : 31;
+        if (sm != null) {
+            dc.setColor((sm[1] as Boolean) ? p[4] : p[7], Graphics.COLOR_TRANSPARENT);
+            dc.drawText(_w / 2, _h - 50, _fLabel, "SOCIAL " + (sm[2] as Number) + "/" + (sm[3] as Number) + " MIN",
+                Graphics.TEXT_JUSTIFY_CENTER);
+        }
         dc.setColor(p[1], Graphics.COLOR_TRANSPARENT);
         dc.drawText(34, y, _fLabel, "SESSION " + pct(u[0] as Number), Graphics.TEXT_JUSTIFY_LEFT);
         dc.setColor(p[3], Graphics.COLOR_TRANSPARENT);

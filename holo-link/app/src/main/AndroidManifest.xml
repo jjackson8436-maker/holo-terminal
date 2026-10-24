@@ -5,10 +5,17 @@
     <!-- Weather for where the phone is; read in the background by the listener service. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <!-- Screen time for the social media ring (granted under Usage access). -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
 
     <!-- Garmin Connect hosts the Connect IQ service the SDK binds to. -->
     <queries>
         <package android:name="com.garmin.android.apps.connectmobile" />
+        <!-- Listing launchable apps for the social app picker. -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
     </queries>
 
     <application

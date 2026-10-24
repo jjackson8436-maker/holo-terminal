@@ -1,7 +1,8 @@
 # Holo Terminal
 
-A Garmin watch face that shows your **Claude usage** as two rings around the screen, plus the
-song playing on your phone, weather, heart rate, battery and steps. Seven themes.
+A Garmin watch face that shows your **Claude usage** as two rings around the screen, an optional
+**social media ring** for today's screen time in the apps you pick, plus the song playing on your phone,
+weather, heart rate, battery and steps. Seven themes.
 
 ![All seven themes](screenshots/all-themes.png)
 
@@ -16,7 +17,11 @@ song playing on your phone, weather, heart rate, battery and steps. Seven themes
 Both rings fill clockwise from the top center.
 
 - **Outer ring:** your 5-hour session limit.
-- **Inner ring:** your weekly limit.
+- **Middle ring:** your weekly limit.
+- **Innermost ring** (with Holo Link): today's minutes in your chosen social apps against a daily
+  budget. It turns to the warning color once you're over.
+
+![Neon with the social ring and labels](screenshots/neon-social-labels.png)
 
 A ring changes to the theme's warning color past 80%, and dims if the numbers are more than
 6 hours old. The **Label the Claude rings** setting writes `SESSION 12%` and `WEEK 27%` at the
@@ -85,16 +90,23 @@ Themes: 0 Wasteland, 1 Amber, 2 Neon, 3 Grid, 4 Outrun, 5 Rain, 6 Mono.
 ### 3. Holo Link (optional, Android)
 
 Garmin doesn't let watch faces read what your phone is playing, and on some phones Garmin's own
-weather never reaches the watch. Holo Link fills both gaps: it watches the phone's media
-sessions and sends the title, artist and play/pause to the face the moment they change, and
-every 15 minutes it sends the weather for the phone's location from
-[Open-Meteo](https://open-meteo.com) (free, no key).
+weather never reaches the watch. Holo Link fills those gaps and feeds the social media ring:
+
+- **Now playing:** it watches the phone's media sessions and sends the title, artist and
+  play/pause to the face the moment they change.
+- **Weather:** every 15 minutes it sends the weather for the phone's location from
+  [Open-Meteo](https://open-meteo.com) (free, no key).
+- **Social media time:** every couple of minutes it sends today's minutes in the apps you pick
+  (Instagram, TikTok, Reddit, YouTube and other feeds are preselected if installed) and your
+  daily budget (60 minutes unless you change it).
 
 Build it with Gradle (`holo-link/gradlew assembleDebug`) and install the APK. Then on the phone:
 
 - **Notification access** for Holo Link (the app has a button for it). Android only shows other
   apps' media sessions to apps with this.
 - **Location: Allow all the time**, for the weather.
+- **Usage access**, for the social ring (also a button in the app). Android counts the time; Holo
+  Link only reads today's totals for the apps you picked.
 
 It needs the Garmin Connect app installed and paired to the watch.
 

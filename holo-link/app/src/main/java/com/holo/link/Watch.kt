@@ -17,7 +17,7 @@ object Watch {
 
     private var ciq: ConnectIQ? = null
     @Volatile private var ready = false
-    // Latest unsent message of each kind (music, weather), sent once the SDK is ready.
+    // Latest unsent message of each kind (music, weather, social), sent once the SDK is ready.
     private val pending = java.util.concurrent.ConcurrentHashMap<String, Map<String, Any>>()
 
     @Volatile var status = "starting"
@@ -53,7 +53,7 @@ object Watch {
     }
 
     fun send(msg: Map<String, Any>) {
-        val kind = if (msg.containsKey("wx")) "wx" else "np"
+        val kind = listOf("wx", "sm").firstOrNull { msg.containsKey(it) } ?: "np"
         pending[kind] = msg
         val c = ciq ?: return
         if (!ready) return

@@ -29,11 +29,15 @@ class HoloApp extends Application.AppBase {
         return [new UsageService()];
     }
 
-    // The background sends {"usage": {...}}, {"np": {...}}, {"wx": {...}} or {"err": code}.
+    // The background sends {"usage": {...}}, {"np": {...}}, {"wx": {...}}, {"sm": {...}} or {"err": code}.
     function onBackgroundData(data as Application.PersistableType) as Void {
         if (data instanceof Dictionary) {
             if (data.hasKey("np")) {
                 Application.Storage.setValue("np", data["np"]);
+            } else if (data.hasKey("sm")) {
+                var sm = data["sm"] as Dictionary;
+                sm["got"] = Time.now().value();
+                Application.Storage.setValue("sm", sm);
             } else if (data.hasKey("wx")) {
                 var wx = data["wx"] as Dictionary;
                 wx["got"] = Time.now().value();

@@ -1,17 +1,21 @@
 package com.holo.link
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.text.InputType
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 
-/** Status screen: notification access, Garmin link, what was last sent. */
+/** Status screen: permissions, Garmin link, what was last sent, and the social media ring settings. */
 class MainActivity : Activity() {
 
     private lateinit var info: TextView
@@ -35,6 +39,18 @@ class MainActivity : Activity() {
             text = "Notification access"
             setOnClickListener { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
         }
+        val usage = Button(this).apply {
+            text = "Usage access (for the social ring)"
+            setOnClickListener { startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)) }
+        }
+        val apps = Button(this).apply {
+            text = "Choose social apps"
+            setOnClickListener { chooseApps() }
+        }
+        val budget = Button(this).apply {
+            text = "Daily social budget"
+            setOnClickListener { chooseBudget() }
+        }
         val test = Button(this).apply {
             text = "Send test track"
             setOnClickListener { Watch.send(mapOf("t" to "Holo Link test", "a" to "Night City", "p" to true)) }
@@ -49,11 +65,8 @@ class MainActivity : Activity() {
                 Runtime.getRuntime().exit(0)
             }
         }
-        root.addView(info)
-        root.addView(access)
-        root.addView(test)
-        root.addView(sim)
-        setContentView(root)
+        for (v in listOf(info, access, usage, apps, budget, test, sim)) root.addView(v)
+        setContentView(ScrollView(this).apply { addView(root) })
     }
 
     override fun onResume() {
@@ -66,7 +79,44 @@ class MainActivity : Activity() {
         super.onPause()
     }
 
-    private fun hasAccess(): Boolean {
+    private fun chooseApps() {
+        val all = Prefs.launchable(this)
+        val chosen = Prefs.socialApps(this).toMutableSet()
+        val labels = all.map { it.second }.toTypedArray()
+        val checked = all.map { it.first in chosen }.toBooleanArray()
+        AlertDialog.Builder(this)
+            .setTitle("Count these apps")
+            .setMultiChoiceItems(labels, checked) { _, i, on ->
+                if (on) chosen += all[i].first else chosen -= all[i].first
+            }
+            .setPositiveButton("Save") { _, _ ->
+                Prefs.setSocialApps(this, chosen)
+                ScreenTimeFeed.instance?.poke()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun chooseBudget() {
+        val input = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            setText(Prefs.budget(this@MainActivity).toString())
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Minutes per day")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val m = input.text.toString().toIntOrNull()
+                if (m != null && m > 0) {
+                    Prefs.setBudget(this, m)
+                    ScreenTimeFeed.instance?.poke()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun notificationAccess(): Boolean {
         val enabled = Settings.Secure.getString(contentResolver, "enabled_notification_listeners") ?: ""
         return enabled.contains(packageName)
     }
@@ -74,11 +124,14 @@ class MainActivity : Activity() {
     private fun show() {
         val np = MediaListener.current
         info.text = buildString {
-            appendLine("Notification access: " + if (hasAccess()) "on" else "OFF (tap below)")
+            appendLine("Notification access: " + if (notificationAccess()) "on" else "OFF (tap below)")
+            appendLine("Usage access: " + if (ScreenTimeFeed.hasAccess(this@MainActivity)) "on" else "OFF (tap below)")
             appendLine("Media listener: " + if (MediaListener.connected) "running" else "not running")
             appendLine("Garmin: ${Watch.status}")
             appendLine("Last send: ${Watch.lastResult.ifEmpty { "-" }}")
             appendLine("Weather: ${WeatherFeed.status.ifEmpty { "-" }}")
+            appendLine("Social: ${ScreenTimeFeed.status.ifEmpty { "-" }}")
+            appendLine("Counting ${Prefs.socialApps(this@MainActivity).size} apps")
             appendLine()
             val title = np?.get("t") as? String
             if (title.isNullOrEmpty()) {
