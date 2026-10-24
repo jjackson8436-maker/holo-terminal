@@ -1,0 +1,5 @@
+<properties>
+    <property id="theme" type="number">2</property>
+    <property id="labels" type="boolean">true</property>
+    <property id="usageUrl" type="string"></property>
+</properties>

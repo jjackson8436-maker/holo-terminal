@@ -1,0 +1,29 @@
+# Signing key and personal settings stay local.
+developer_key.der
+*.der
+personal.json
+
+# Build output
+holoface/bin/
+*.prg
+*.iq
+*.apk
+holo-link/.gradle/
+holo-link/build/
+holo-link/app/build/
+holo-link/local.properties
+holo-link/.kotlin/
+
+# Simulator and scratch captures
+/*.png
+/*.xml
+/frag_*.mc
+/assemble.py
+/fix*.py
+
+# Compiler and Python leftovers
+*-settings.json
+gen/
+mir/
+internal-mir/
+__pycache__/

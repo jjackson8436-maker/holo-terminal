@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Weather for where the phone is; read in the background by the listener service. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <!-- Garmin Connect hosts the Connect IQ service the SDK binds to. -->
+    <queries>
+        <package android:name="com.garmin.android.apps.connectmobile" />
+    </queries>
+
+    <application
+        android:name=".HoloLinkApp"
+        android:allowBackup="false"
+        android:icon="@drawable/ic_launcher"
+        android:label="Holo Link"
+        android:theme="@android:style/Theme.DeviceDefault">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Notification access is what lets an app see other apps' media sessions. -->
+        <service
+            android:name=".MediaListener"
+            android:exported="false"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

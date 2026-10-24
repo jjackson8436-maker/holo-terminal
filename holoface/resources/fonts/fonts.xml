@@ -1,0 +1,11 @@
+<resources>
+    <fonts>
+        <font id="VtTime" filename="vt_time.fnt" antialias="true"/>
+        <font id="VtSmall" filename="vt_small.fnt" antialias="true"/>
+        <font id="OrbTime" filename="orb_time.fnt" antialias="true"/>
+        <font id="OrbSmall" filename="orb_small.fnt" antialias="true"/>
+        <font id="OrbDate" filename="orb_date.fnt" antialias="true"/>
+        <font id="OrbLabel" filename="orb_label.fnt" antialias="true"/>
+        <font id="VtLabel" filename="vt_label.fnt" antialias="true"/>
+    </fonts>
+</resources>

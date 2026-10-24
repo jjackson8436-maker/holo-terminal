@@ -1,0 +1,13 @@
+<strings>
+    <string id="AppName">Holo Terminal</string>
+    <string id="ThemeTitle">Theme</string>
+    <string id="ThemeWasteland">Wasteland (green terminal)</string>
+    <string id="ThemeAmber">Amber (amber terminal)</string>
+    <string id="ThemeNeon">Neon (yellow, cyan, magenta)</string>
+    <string id="ThemeGrid">Grid (cyan and orange)</string>
+    <string id="ThemeOutrun">Outrun (sunset and grid)</string>
+    <string id="ThemeRain">Rain (falling code)</string>
+    <string id="ThemeMono">Mono (black and white)</string>
+    <string id="LabelsTitle">Label the Claude rings</string>
+    <string id="UrlTitle">Claude usage URL (https)</string>
+</strings>

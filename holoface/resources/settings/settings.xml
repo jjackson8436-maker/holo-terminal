@@ -1,0 +1,19 @@
+<settings>
+    <setting propertyKey="@Properties.theme" title="@Strings.ThemeTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.ThemeWasteland</listEntry>
+            <listEntry value="1">@Strings.ThemeAmber</listEntry>
+            <listEntry value="2">@Strings.ThemeNeon</listEntry>
+            <listEntry value="3">@Strings.ThemeGrid</listEntry>
+            <listEntry value="4">@Strings.ThemeOutrun</listEntry>
+            <listEntry value="5">@Strings.ThemeRain</listEntry>
+            <listEntry value="6">@Strings.ThemeMono</listEntry>
+        </settingConfig>
+    </setting>
+    <setting propertyKey="@Properties.labels" title="@Strings.LabelsTitle">
+        <settingConfig type="boolean"/>
+    </setting>
+    <setting propertyKey="@Properties.usageUrl" title="@Strings.UrlTitle">
+        <settingConfig type="alphaNumeric"/>
+    </setting>
+</settings>

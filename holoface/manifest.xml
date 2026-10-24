@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+    <iq:application id="fa0565f5-99d1-4366-8c43-ca4606f73b67" type="watchface" name="@Strings.AppName" entry="HoloApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="3.2.0">
+        <iq:products>
+            <iq:product id="venusq2"/>
+            <iq:product id="venusq2m"/>
+        </iq:products>
+        <iq:permissions>
+            <iq:uses-permission id="Background"/>
+            <iq:uses-permission id="Communications"/>
+        </iq:permissions>
+        <iq:languages>
+            <iq:language>eng</iq:language>
+        </iq:languages>
+        <iq:barrels/>
+    </iq:application>
+</iq:manifest>
