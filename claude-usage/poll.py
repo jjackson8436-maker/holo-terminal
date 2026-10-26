@@ -223,6 +223,11 @@ def setup(name, config_dir, ntfy, gist):
     p = run(["schtasks", "/Create", "/F", "/SC", "MINUTE", "/MO", "15", "/TN", task,
              "/TR", f'"{pyw}" "{script}" {name}'])
     print(p.stdout.strip() or p.stderr.strip())
+    # schtasks defaults to "don't start on battery", which silently skips every run on a laptop.
+    run(["powershell", "-NoProfile", "-Command",
+         "Set-ScheduledTask -TaskName '" + task + "' -Settings (New-ScheduledTaskSettingsSet "
+         "-AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -Hidden "
+         "-ExecutionTimeLimit (New-TimeSpan -Minutes 5) -MultipleInstances IgnoreNew) | Out-Null"])
     check(name)
     print(f"Account: {email}\nTask: {task} (every 15 minutes)\nLog: {os.path.join(DIR, name + '.log')}")
 
