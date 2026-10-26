@@ -55,6 +55,18 @@ This creates a secret gist, installs the status line script in `~/.claude-usage/
 `statusLine` entry to `~/.claude/settings.json` (backing it up first), and prints your gist's
 raw URL. Leave out `--apply` to add the setting yourself.
 
+**Another account, no window open.** `claude-usage/poll.py` watches a second Pro/Max account
+(say a work one) on a schedule. Sign it in under its own Claude Code folder, then set it up:
+
+```
+set CLAUDE_CONFIG_DIR=%USERPROFILE%\.claude-work
+claude auth login
+python claude-usage/poll.py work --setup
+```
+
+Every 15 minutes it sends one tiny request (about 600 tokens) as that account, reads the
+account-wide limits Claude Code reports, and writes them to that account's own secret gist.
+
 Why a gist: on Android, a Garmin watch can only fetch `https` addresses with a real certificate,
 so it can't read a file off your PC.
 
