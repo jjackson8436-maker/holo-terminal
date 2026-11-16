@@ -108,9 +108,22 @@ def alerts(name, cfg, win):
 def check(name):
     cfg = load(os.path.join(DIR, f"{name}.json"), None)
     email = signed_in_email(cfg["config_dir"])
+    flag = os.path.join(DIR, f"{name}.signedout")
     if email != cfg["email"]:
-        # Never report some other account's numbers under this name.
+        # Never report some other account's numbers under this name. Say so on
+        # the phone, once: on 2026-11-16 the sign-in dropped and the page sat
+        # on the day before's numbers for hours without anyone knowing.
+        if not os.path.exists(flag) and cfg.get("ntfy"):
+            try:
+                notify(cfg["ntfy"], f"{cfg.get('label', name)} Claude usage: signed out",
+                       f"The usage page cannot check {cfg['email']}. Double-click "
+                       "'Sign in ERA Claude usage' on the Desktop.", "high")
+                open(flag, "w").close()
+            except OSError as e:
+                log(name, f"ALERT FAILED signed out: {e}")
         return log(name, f"SKIPPED: {cfg['config_dir']} is signed in as {email!r}, expected {cfg['email']!r}")
+    if os.path.exists(flag):
+        os.remove(flag)
     p = run([CLAUDE, *PING], env=claude_env(cfg["config_dir"]), stdin="ok")
     win = None
     for line in p.stdout.splitlines():
